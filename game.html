@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script
+      async
+      src="https://jiogames.akamaized.net/gameSDK/jiogames/stable/v2.0/jiogames_sdk.js"
+      data-jg-test-environment="off"
+    ></script>
+    <meta charset="UTF-8" />
+    <title>Planet Defense</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        background: #191919;
+      }
+
+      #canvas {
+        background: url("space1.jpg") no-repeat center;
+        background-size: cover;
+        z-index: 1000;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      #canvas.playing {
+        cursor: url("./aim_red.png") 17.5 17.5, auto !important;
+      }
+      #popup,
+      #gameover-buttons {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2c2f4a;
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        z-index: 9999; /* <- bump high to avoid canvas conflicts */
+        display: none;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      #popup button,
+      #gameover-buttons button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: none;
+        background-color: #444;
+        color: white;
+      }
+
+      #popup button:hover,
+      #gameover-buttons button:hover {
+        background-color: #666;
+      }
+
+      #popup {
+        display: none;
+      }
+      #gameover-buttons {
+        display: none;
+      }
+      /* ===== Pause Button ===== */
+      #pauseButton {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 15;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+        background-color: #444;
+        color: white;
+        cursor: pointer;
+        position: absolute;
+      }
+
+      /* #pauseButton:hover {
+        background-color: #666;
+    } */
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <!-- Popup for Continue -->
+    <div id="popup">
+      <p>Do you want to continue?</p>
+      <button onclick="handleYes()">Yes</button>
+      <button onclick="handleNo()">No</button>
+    </div>
+
+    <!-- Buttons on Game Over Screen -->
+    <div id="gameover-buttons">
+      <p>Game Over</p>
+      <button onclick="restartGame()">Restart</button>
+      <button onclick="goHome()">Home</button>
+    </div>
+
+    <!-- Pause Button -->
+    <button id="pauseButton" onclick="togglePause()" style="display: none">
+      Pause
+    </button>
+
+    <script>
+      // ===== Global Assets =====
+      const sprite = new Image();
+      const spriteExplosion = new Image();
+      sprite.src = "./Sprite image2.jpg";
+      spriteExplosion.src = "./explosion__imagebg.png";
+
+      // ===== Constants =====
+      const STATE = { HOME: "home", PLAYING: "playing", GAMEOVER: "gameover" };
+
+      // ===== Variables =====
+      let canvas, ctx, cW, cH;
+      let bullets = [],
+        asteroids = [],
+        explosions = [];
+      let destroyed = 0;
+      let gameState = STATE.HOME;
+      let paused = false,
+        continueUsed = false;
+      let lives = 3;
+      let record = 0;
+
+      const player = {
+        posX: -35,
+        posY: -(100 + 82),
+        width: 70,
+        height: 79,
+        deg: 0,
+      };
+      const planet = { deg: 0 };
+
+      // ===== Initialize Canvas =====
+      window.addEventListener("DOMContentLoaded", () => {
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+        resizeCanvas();
+
+        window.addEventListener("resize", resizeCanvas);
+        canvas.addEventListener("click", handleClick);
+        canvas.addEventListener("mousemove", handleMouseMove);
+        requestAnimationFrame(loop);
+      });
+
+      function resizeCanvas() {
+        cW = canvas.width = window.innerWidth;
+        cH = canvas.height = window.innerHeight;
+      }
+
+      // ===== Handle Mouse =====
+      function handleMouseMove(e) {
+        if (gameState === STATE.PLAYING && !paused) {
+          player.deg = Math.atan2(e.offsetX - cW / 2, -(e.offsetY - cH / 2));
+        }
+      }
+
+      function handleClick(e) {
+        if (
+          paused ||
+          document.getElementById("popup").style.display === "block"
+        )
+          return;
+
+        if (gameState === STATE.HOME) {
+          if (insideCircle(e, cW / 2, cH / 2, 35)) startGame();
+        } else if (gameState === STATE.PLAYING) {
+          fireBullet(e);
+        }
+      }
+
+      function insideCircle(e, centerX, centerY, radius) {
+        const dx = e.offsetX - centerX;
+        const dy = e.offsetY - centerY;
+        return Math.sqrt(dx * dx + dy * dy) < radius;
+      }
+       
+  function startGame() {
+  // Step 1: Cache Interstitial Ad immediately
+  setTimeout(() => {
+    window.JioGames?.cacheAd(AdType.Interstitial, {
+      onAdPrepared: function () {
+        console.log("index : Interstitial Ad prepared successfully.");
+      },
+      onAdFailedToLoad: function (error) {
+        console.log("index : Failed to load Interstitial Ad: " + error);
+      },
+    });
+  }, 0); // Immediate execution
+
+  // Step 2: Cache Rewarded Ad after 5 seconds
+  setTimeout(() => {
+    window.JioGames?.cacheAd(AdType.Rewarded, {
+      onAdPrepared: function () {
+        console.log("index : Rewarded Ad prepared successfully.");
+      },
+      onAdFailedToLoad: function (error) {
+        console.log("index : Failed to load Rewarded Ad: " + error);
+      },
+    });
+  }, 5000); // Delay by 5 seconds (5000 ms)
+
+        // Reset game state
+        gameState = STATE.PLAYING;
+        bullets = [];
+        asteroids = [];
+        explosions = [];
+        destroyed = 0;
+        player.deg = 0;
+        continueUsed = false;
+        lives = 3;
+
+        // Update UI
+        canvas.classList.add("playing");
+        document.getElementById("gameover-buttons").style.display = "none";
+        document.getElementById("pauseButton").style.display = "block";
+        document.getElementById("pauseButton").textContent = "Pause";
+      }
+
+      function resetGame() {
+        gameState = STATE.HOME;
+        canvas.classList.remove("playing");
+        document.getElementById("gameover-buttons").style.display = "none";
+        document.getElementById("pauseButton").style.display = "none";
+      }
+
+      function restartGame() {
+        document.getElementById("gameover-buttons").style.display = "none";
+        continueUsed = false;
+        startGame();
+      }
+
+      function goHome() {
+        resetGame();
+      }
+
+      // ===== Pause Logic =====
+      function togglePause() {
+        if (gameState !== STATE.PLAYING) return;
+
+        paused = !paused;
+        const btn = document.getElementById("pauseButton");
+        btn.textContent = paused ? "Resume" : "Pause";
+      }
+
+      // ===== POPUP LOGIC =====
+
+      function showPopup() {
+        if (continueUsed) {
+          endGameOver(); // Prevent showing again
+          return;
+        }
+        document.getElementById("popup").style.display = "block";
+        paused = true;
+      }
+
+      function hidePopup() {
+        document.getElementById("popup").style.display = "none";
+        paused = false;
+      }
+
+      function handleYes() {
+        hidePopup(); // Hide the popup immediately
+        paused = true; // Pause the game while the ad plays
+        continueUsed = true;
+      //  if (window.JioGames.state.Rewarded.isAdReady)
+      {
+        window.JioGames?.showAd(AdType.Rewarded, {
+          onAdClosed: function (isRewardUser) {
+            console.log("index : Rewarded Ad closed.");
+            window.JioGames.state.Rewarded.isAdReady = false;
+            if (isRewardUser) {
+              console.log("index: Give here the reward to the user.");
+              lives = 3;
+              clearNearbyAsteroids(); 
+              bullets = [];
+              paused = false;
+              gameState = STATE.PLAYING;
+            } else {
+              console.log("index: User skipped the ad, not continuing.");
+              endGameOver();
+            }
+          },
+          onAdFailedToLoad: function (error) {
+            console.log("index : Failed to load Rewarded Ad: " + error);
+            endGameOver();
+          },
+        });
+      }}
+
+      function handleNo() {
+        hidePopup(); // Hide popup first
+        paused = true;
+        endGameOver(); //Pause game while ad is showing
+        // if (window.JioGames.state.Interstitial.isAdReady)
+        {
+        window.JioGames?.showAd(AdType.Interstitial, {
+          onAdClosed: function () {
+            console.log("index : Interstitial Ad closed.");
+          window.JioGames.state.Interstitial.isAdReady = false;
+          },
+          
+          onAdFailedToLoad: function (error) {
+            console.log("index : Failed to load Interstitial Ad: " + error);
+          },
+        });
+        window.JioGames?.postScore?.(destroyed);
+      }}
+
+      function endGameOver() {
+        console.log("END GAME TRIGGERED");
+        document.getElementById("popup").style.display = "none";
+        paused = false;
+        gameState = STATE.GAMEOVER;
+        record = Math.max(record, destroyed);
+        document.getElementById("gameover-buttons").style.display = "block";
+      }
+
+      function clearNearbyAsteroids() {
+        const safeDistance = 150;
+        asteroids = asteroids.filter(
+          (ast) =>
+            Math.hypot(ast.realX - cW / 2, ast.realY - cH / 2) > safeDistance
+        );
+      }
+
+      // ===== Game Functions =====
+      function fireBullet(e) {
+        const bullet = {
+          x: -8,
+          y: -179,
+          sizeX: 2,
+          sizeY: 10,
+          realX: e.offsetX,
+          realY: e.offsetY,
+          dirX: e.offsetX,
+          dirY: e.offsetY,
+          deg: Math.atan2(e.offsetX - cW / 2, -(e.offsetY - cH / 2)),
+          destroyed: false,
+        };
+        bullets.push(bullet);
+      }
+
+      function drawLives() {
+        const radius = 12;
+        const spacing = 40;
+        const startX = cW - (spacing * 3 + 20);
+        const y = 30;
+
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath();
+          ctx.arc(startX + i * spacing, y, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = i < lives ? "red" : "grey";
+          ctx.fill();
+          ctx.strokeStyle = "white";
+          ctx.stroke();
+        }
+      }
+
+      function drawHome() {
+        ctx.clearRect(0, 0, cW, cH);
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+
+        ctx.font = "60px Verdana";
+
+        ctx.fillText("PLANET DEFENSE", cW / 2, cH / 2 - 100);
+
+        ctx.font = "20px Verdana";
+        ctx.fillText(
+          "Click on Start icon to Shoot the Asteroids",
+          cW / 2,
+          cH / 2 - 50
+        );
+
+        ctx.save(); // Save canvas state
+        ctx.beginPath();
+        ctx.arc(cW / 2, cH / 2, 35, 0, Math.PI * 2); // Positive radius!
+        ctx.clip(); // Clip everything inside circle 
+        ctx.drawImage(
+          sprite,
+          428,
+          12,
+          70,
+          70,
+          cW / 2 - 35,
+          cH / 2 - 35,
+          70,
+          70
+        );
+        
+        ctx.restore(); // Restore canvas state (remove clipping)
+      }
+
+      function drawGame() {
+        ctx.clearRect(0, 0, cW, cH);
+        drawPlanet();
+        drawPlayer();
+
+        if (!paused) {
+          drawBullets();
+          drawAsteroids();
+        }
+
+        drawLives();
+
+        ctx.font = "20px Verdana";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "left";
+        // ctx.fillText('Record: ' + record, 20, 30);
+
+        ctx.font = "40px Verdana";
+        ctx.textAlign = "center";
+        ctx.fillText("" + destroyed, cW / 2, cH / 2);
+      }
+
+      function drawGameOver() {
+        ctx.fillStyle = "rgba(128, 0, 128, 0.50)"; // Purple with 75% opacity
+        ctx.fillRect(0, 0, cW, cH);
+
+        ctx.font = "60px Verdana";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", cW / 2, cH / 2 - 150);
+
+        ctx.font = "20px Verdana";
+        ctx.fillText("Total Destroyed: " + destroyed, cW / 2, cH / 2 + 150);
+        //ctx.fillText('RECORD: ' + record, cW / 2, cH / 2 + 140);
+      }
+
+      // ==== Helper to clip circular images ====
+      function drawClippedImage(img, sx, sy, sw, sh, dx, dy, dw, dh) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(dx + dw / 2, dy + dh / 2, Math.min(dw, dh) / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        ctx.restore();
+      }
+
+      // ==== Draw Planet ====
+      function drawPlanet() {
+        ctx.save();
+        ctx.fillStyle = "white";
+        ctx.shadowBlur = 100;
+        ctx.shadowColor = "#999";
+        ctx.beginPath();
+        ctx.arc(cW / 2, cH / 2, 100, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.translate(cW / 2, cH / 2);
+        ctx.rotate(((planet.deg += 0.1) * Math.PI) / 180);
+        ctx.beginPath();
+        ctx.arc(0, 0, 100, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(sprite, 0, 0, 200, 200, -100, -100, 200, 200);
+        ctx.restore();
+      }
+
+      function removeWhiteBackground(sprite, sx, sy, sw, sh) {
+        // Create an off-screen canvas
+        const offCanvas = document.createElement("canvas");
+        offCanvas.width = sw;
+        offCanvas.height = sh;
+        const offCtx = offCanvas.getContext("2d");
+
+        // Draw the sprite portion to the offscreen canvas
+        offCtx.drawImage(sprite, sx, sy, sw, sh, 0, 0, sw, sh);
+
+        // Get pixel data
+        const imageData = offCtx.getImageData(0, 0, sw, sh);
+        const data = imageData.data;
+
+        // Iterate over every pixel (4 values per pixel: R,G,B,A)
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+
+          // Define a threshold for "white" (you can tweak this)
+          if (r > 240 && g > 240 && b > 240) {
+            data[i + 3] = 0; // Set alpha to 0 (transparent)
+          }
+        }
+
+        // Put the modified data back
+        offCtx.putImageData(imageData, 0, 0);
+        return offCanvas;
+      }
+
+      // ==== Draw Player ====
+      function drawPlayer() {
+        ctx.save();
+        ctx.translate(cW / 2, cH / 2);
+        ctx.rotate(player.deg);
+
+        // Just draw image directly — no clip needed!
+        const cleanSprite = removeWhiteBackground(
+          sprite,
+          200,
+          0,
+          player.width,
+          player.height
+        );
+        ctx.drawImage(
+          cleanSprite,
+          player.posX,
+          player.posY,
+          player.width,
+          player.height
+        );
+        // ctx.drawImage(sprite, 200, 0, player.width, player.height, player.posX, player.posY, player.width, player.height);
+        // ctx.clip();
+        ctx.restore();
+      }
+
+      // ==== Draw Bullets ====
+      function drawBullets() {
+        bullets.forEach((b) => {
+          if (!b.destroyed) {
+            ctx.save();
+            ctx.translate(cW / 2, cH / 2);
+            ctx.rotate(b.deg);
+
+            const bulletW = 19;
+            const bulletH = 30;
+            const bulletX = b.x;
+            const bulletY = (b.y -= 20);
+
+            drawClippedImage(
+              sprite,
+              211,
+              100,
+              50,
+              75,
+              bulletX,
+              bulletY,
+              bulletW,
+              bulletH
+            );
+
+            ctx.restore();
+
+            b.realX = 0 - (b.y + bulletH / 2) * Math.sin(b.deg) + cW / 2;
+            b.realY = 0 + (b.y + bulletH / 2) * Math.cos(b.deg) + cH / 2;
+
+            asteroids.forEach((ast) => {
+              if (!ast.destroyed) {
+                const dist = Math.hypot(
+                  ast.realX - b.realX,
+                  ast.realY - b.realY
+                );
+                if (dist < ast.width / ast.size / 2 - 4 + (bulletW / 2 - 4)) {
+                  destroyed++;
+                  ast.destroyed = true;
+                  b.destroyed = true;
+                  explosions.push(ast);
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // ==== New Asteroid ====
+      function newAsteroid() {
+        const type = Math.floor(Math.random() * 4) + 1;
+        let coordsX, coordsY;
+
+        switch (type) {
+          case 1:
+            coordsX = random(0, cW);
+            coordsY = -150;
+            break;
+          case 2:
+            coordsX = cW + 150;
+            coordsY = random(0, cH);
+            break;
+          case 3:
+            coordsX = random(0, cW);
+            coordsY = cH + 150;
+            break;
+          case 4:
+            coordsX = -150;
+            coordsY = random(0, cH);
+            break;
+        }
+
+        const asteroid = {
+          x: 278,
+          y: 0,
+          width: 134,
+          height: 123,
+          coordsX,
+          coordsY,
+          size: random(1, 3),
+          deg: Math.atan2(coordsX - cW / 2, -(coordsY - cH / 2)),
+          moveY: 0,
+          destroyed: false,
+          state: 0,
+          stateX: 0,
+        };
+        asteroids.push(asteroid);
+      }
+
+      // ==== Random utility ====
+      function random(from, to) {
+        return Math.floor(Math.random() * (to - from + 1)) + from;
+      }
+
+      // ==== Draw Asteroids ====
+      function drawAsteroids() {
+        asteroids.forEach((ast) => {
+          if (!ast.destroyed) {
+            ctx.save();
+            ctx.translate(ast.coordsX, ast.coordsY);
+            ctx.rotate(ast.deg);
+
+            const drawW = ast.width / ast.size;
+            const drawH = ast.height / ast.size;
+            const drawX = -drawW / 2;
+            const drawY = (ast.moveY += 1 / ast.size);
+
+            drawClippedImage(
+              sprite,
+              ast.x,
+              ast.y,
+              ast.width,
+              ast.height,
+              drawX,
+              drawY,
+              drawW,
+              drawH
+            );
+
+            ctx.restore();
+
+            ast.realX =
+              0 - (ast.moveY + drawH / 2) * Math.sin(ast.deg) + ast.coordsX;
+            ast.realY =
+              0 + (ast.moveY + drawH / 2) * Math.cos(ast.deg) + ast.coordsY;
+
+            const dist = Math.hypot(ast.realX - cW / 2, ast.realY - cH / 2);
+            if (dist < ast.width / ast.size / 2 - 4 + 100) {
+              ast.destroyed = true;
+              explosions.push(ast);
+              lives--;
+              if (lives <= 0) {
+                if (!continueUsed && window.JioGames.state.Rewarded.isAdReady)
+                 {
+                  showPopup();
+                } else {
+                  paused = true;
+                  endGameOver();
+                  window.JioGames?.showAd(AdType.Interstitial, {
+                    onAdClosed: function () {
+                      console.log("index : Interstitial Ad closed.");
+                      window.JioGames.state.Interstitial.isAdReady = false;
+                    },
+                    onAdFailedToLoad: function (error) {
+                      console.log(
+                        "index : Failed to load Interstitial Ad: " + error
+                      );
+                    },
+                  });
+                  window.JioGames?.postScore?.(destroyed);
+                }
+              }
+            }
+          } else {
+            animateExplosion(ast);
+          }
+        });
+
+        if (asteroids.length - destroyed < 10 + Math.floor(destroyed / 6)) {
+          newAsteroid();
+        }
+      }
+
+      // ==== Animate Explosion ====
+      function animateExplosion(ast) {
+        ctx.save();
+        ctx.translate(ast.realX, ast.realY);
+        ctx.rotate(ast.deg);
+
+        let spriteY = Math.floor(ast.state / 8) * 256;
+        if (ast.state % 8 === 0) ast.stateX = 0;
+
+        const drawW = ast.width / ast.size;
+        const drawH = ast.height / ast.size;
+        const drawX = -drawW / 2;
+        const drawY = -drawH / 2;
+
+        drawClippedImage(
+          spriteExplosion,
+          (ast.stateX += 256),
+          spriteY,
+          256,
+          256,
+          drawX,
+          drawY,
+          drawW,
+          drawH
+        );
+
+        ast.state++;
+        ctx.restore();
+      }
+
+      // ==== Game Loop ====
+      function loop() {
+        requestAnimationFrame(loop);
+        if (gameState === STATE.HOME) drawHome();
+        else if (gameState === STATE.PLAYING) drawGame();
+        else if (gameState === STATE.GAMEOVER) drawGameOver();
+      }
+    </script>
+  </body>
+</html>

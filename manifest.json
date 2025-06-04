@@ -1,0 +1,80 @@
+{
+  "version": "2.0.0",
+  "version_code": 2,
+  "name": "Common Game",
+  "package_name": "com.jiogames.commongame",
+  "description": "Enter the discription of the game.",
+  "launch_path": "index.html",
+  "icons": {    
+    "128": "images/icons/icon128x128.png"
+  },
+  "developer": {
+    "name": "Developer Name",
+    "url": "https://developer_url.in"
+  },
+  "ad_config": {
+    "android": {
+      "package_name": "com.jiogames.testsp",
+      "interstitial": "zbjnq9gs",
+      "rewarded": "81xnt9bw"
+    
+    },
+    "ios": {
+      "package_name": "com.vendorname.gamenameIOS",
+      "interstitial": "3l7i2f1v",
+      "rewarded": "zy91e0oc",
+      "banner": "sdsfdft32"
+    },
+    "stb": {
+      "package_name": "com.jiogames.testjgstb",
+      "interstitial": "5uz8knyc",
+      "rewarded": "ac8wi2jg"
+    },
+    "msite": {
+      "package_name": "com.vendorname.gamenameMSITE",
+      "interstitial": "3l7i2f1v",
+      "rewarded": "zy91e0oc",
+      "banner": "sdsfdft32"
+    },
+    "desktop": {
+      "package_name": "com.vendorname.gamenameDESKTOP",
+      "interstitial": "3l7i2f1v",
+      "rewarded": "zy91e0oc"
+    }
+  },
+  "default_locale": "en",
+  "fullscreen": true,
+  "permissions": {
+    "systemXHR": {
+      "description": "Required to call web APIs"
+    },
+    "device-storage:sdcard": {
+      "description": "Required to read/write data",
+      "access": "readwrite"
+    },
+    "browser": {
+      "description": "Required for embedding a browser iframe"
+    },
+    "serviceworker": {
+      "description": "Required for push"
+    },
+    "desktop-notification": {
+      "description": "Required for desktop notifications"
+    },
+    "volumemanager": {
+      "description": "Required for volume control using native method"
+    },
+    "push": {
+      "description": "Required for notifications"
+    },
+    "audio-capture": {
+      "description": "Required to capture audio using getUserMedia()"
+    },
+    "datacall": {
+      "description": "Required to check internet connection"
+    },
+    "cross-domain-content": [
+      "https://developer_url.in"
+    ]
+  }
+}
