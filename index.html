@@ -4,7 +4,7 @@
     <script
       async
       src="https://jiogames.akamaized.net/gameSDK/jiogames/stable/v2.0/jiogames_sdk.js"
-      data-jg-test-environment="off"
+      data-jg-test-environment="on"
     ></script>
     <meta charset="UTF-8" />
     <title>Planet Defense</title>
@@ -20,7 +20,7 @@
       }
 
       #canvas {
-        background: url("space1.jpg") no-repeat center;
+        background: url("Chatgptclean.png") no-repeat center;
         background-size: cover;
         z-index: 1000;
         width: 100%;
@@ -44,7 +44,7 @@
         text-align: center;
         z-index: 9999; /* <- bump high to avoid canvas conflicts */
         display: none;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); 
       }
       #popup button,
       #gameover-buttons button {
@@ -102,9 +102,9 @@
 
     <!-- Buttons on Game Over Screen -->
     <div id="gameover-buttons">
-      <p>Game Over</p>
-      <button onclick="restartGame()">Restart</button>
-      <button onclick="goHome()">Home</button>
+       <!-- <p>Game Over</p>-->
+      <button onclick="restartGame()">Play Again</button>
+      <button onclick="goHome()">Home Menu</button>
     </div>
 
     <!-- Pause Button -->
@@ -113,11 +113,12 @@
     </button>
 
     <script>
+
       // ===== Global Assets =====
       const sprite = new Image();
       const spriteExplosion = new Image();
-      sprite.src = "./Sprite image2.jpg";
-      spriteExplosion.src = "./explosion__imagebg.png";
+      sprite.src = "Canva 2.png";
+      spriteExplosion.src = "https://marclopezavila.github.io/planet-defense-game/img/explosion.png";
 
       // ===== Constants =====
       const STATE = { HOME: "home", PLAYING: "playing", GAMEOVER: "gameover" };
@@ -130,7 +131,7 @@
       let destroyed = 0;
       let gameState = STATE.HOME;
       let paused = false,
-        continueUsed = false;
+      continueUsed = false;
       let lives = 3;
       let record = 0;
 
@@ -175,7 +176,8 @@
           return;
 
         if (gameState === STATE.HOME) {
-          if (insideCircle(e, cW / 2, cH / 2, 35)) startGame();
+         if (insideCircle(e, cW / 2, cH / 2, 50)) startGame();  // increased radius 50
+
         } else if (gameState === STATE.PLAYING) {
           fireBullet(e);
         }
@@ -258,8 +260,11 @@
       // ===== POPUP LOGIC =====
 
       function showPopup() {
+      
         if (continueUsed) {
           endGameOver(); // Prevent showing again
+          document.getElementById("pauseButton").style.display = "none";
+
           return;
         }
         document.getElementById("popup").style.display = "block";
@@ -291,11 +296,15 @@
             } else {
               console.log("index: User skipped the ad, not continuing.");
               endGameOver();
+              document.getElementById("pauseButton").style.display = "none";
+
             }
           },
           onAdFailedToLoad: function (error) {
             console.log("index : Failed to load Rewarded Ad: " + error);
             endGameOver();
+            document.getElementById("pauseButton").style.display = "none";
+
           },
         });
       }}
@@ -305,6 +314,8 @@
         paused = true;
         endGameOver(); //Pause game while ad is showing
         // if (window.JioGames.state.Interstitial.isAdReady)
+        document.getElementById("pauseButton").style.display = "none";
+
         {
         window.JioGames?.showAd(AdType.Interstitial, {
           onAdClosed: function () {
@@ -335,6 +346,7 @@
             Math.hypot(ast.realX - cW / 2, ast.realY - cH / 2) > safeDistance
         );
       }
+      
 
       // ===== Game Functions =====
       function fireBullet(e) {
@@ -369,40 +381,125 @@
         }
       }
 
-      function drawHome() {
-        ctx.clearRect(0, 0, cW, cH);
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
+let pulseScale = 1;
+let pulseDirection = 1; // 1 = growing, -1 = shrinking
 
-        ctx.font = "60px Verdana";
+function drawHome() {
+  ctx.clearRect(0, 0, cW, cH);
+  ctx.textAlign = "center";
 
-        ctx.fillText("PLANET DEFENSE", cW / 2, cH / 2 - 100);
+  // === Stylized Title with Gradient and Shadow ===
+  const titleText = "PLANET DEFENSE";
+  ctx.font = "bold 60px Verdana";
 
-        ctx.font = "20px Verdana";
-        ctx.fillText(
-          "Click on Start icon to Shoot the Asteroids",
-          cW / 2,
-          cH / 2 - 50
-        );
+  // Create horizontal gradient
+  const gradient = ctx.createLinearGradient(cW / 2 - 200, 0, cW / 2 + 200, 0);
+  gradient.addColorStop(0, "#00f0ff");
+  gradient.addColorStop(1, "#8e44ad");
 
-        ctx.save(); // Save canvas state
-        ctx.beginPath();
-        ctx.arc(cW / 2, cH / 2, 35, 0, Math.PI * 2); // Positive radius!
-        ctx.clip(); // Clip everything inside circle 
-        ctx.drawImage(
-          sprite,
-          428,
-          12,
-          70,
-          70,
-          cW / 2 - 35,
-          cH / 2 - 35,
-          70,
-          70
-        );
-        
-        ctx.restore(); // Restore canvas state (remove clipping)
-      }
+  ctx.fillStyle = gradient;
+
+  ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+  ctx.shadowOffsetX = 4;
+  ctx.shadowOffsetY = 4;
+  ctx.shadowBlur = 6;
+
+  ctx.fillText(titleText, cW / 2, cH / 2 - 140);
+
+  // Reset shadow for other text
+  ctx.shadowColor = "transparent";
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.shadowBlur = 0;
+
+  // Setup font and alignment
+ctx.font = "22px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+ctx.fillStyle = "#f0f0f0";
+ctx.textAlign = "center";
+ctx.textBaseline = "top";
+
+// Soft shadow for subtle depth
+ctx.shadowColor = "rgba(0, 0, 0, 0.25)";
+ctx.shadowOffsetX = 1.5;
+ctx.shadowOffsetY = 1.5;
+ctx.shadowBlur = 4;
+
+// Instruction text split into multiple lines for better readability
+const instructions = [
+  "Instruction:",
+  "To save the planet from asteroids, move the spaceship toward the asteroids",
+  "and press OK to destroy."
+];
+
+// Position to start drawing text (below the button, for example)
+const startX = cW / 2;
+const startY = cH / 2 + 180;
+const lineHeight = 30;
+
+// Draw each line centered with spacing
+instructions.forEach((line, i) => {
+  // Optional: Create a gradient fill for each line
+  const gradient = ctx.createLinearGradient(startX - 150, startY + i * lineHeight, startX + 150, startY + i * lineHeight);
+  gradient.addColorStop(0, "#dcdcdc");
+  gradient.addColorStop(1, "#a29bfe");
+  ctx.fillStyle = gradient;
+
+  ctx.fillText(line, startX, startY + i * lineHeight);
+});
+
+// Reset shadow for next drawings
+ctx.shadowColor = "transparent";
+ctx.shadowBlur = 0;
+ctx.shadowOffsetX = 0;
+ctx.shadowOffsetY = 0;
+
+
+  // === Start Button UI ===
+  const baseRadius = 50;
+  const centerX = cW / 2;
+  const centerY = cH / 2;
+
+  // Update pulse scale for subtle animation
+  pulseScale += 0.01 * pulseDirection;
+  if (pulseScale > 1.05) pulseDirection = -1;
+  if (pulseScale < 0.95) pulseDirection = 1;
+
+  const radius = baseRadius * pulseScale;
+
+  // Draw glowing outer circle
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(142, 68, 173, 0.3)";
+  ctx.shadowColor = "#8e44ad";
+  ctx.shadowBlur = 20;
+  ctx.fill();
+
+  ctx.shadowBlur = 0; // reset shadow
+
+  // Draw clipped sprite circle
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.clip();
+
+  ctx.drawImage(
+    sprite,
+    428, 12, 70, 70,              // source from sprite
+    centerX - radius, centerY - radius,  // destination top-left
+    radius * 2, radius * 2                // destination size
+  );
+
+  ctx.restore();
+
+  // Draw START label below button
+  ctx.font = "bold 28px Verdana";
+  ctx.fillStyle = "#8e44ad";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.shadowBlur = 4;
+
+}
 
       function drawGame() {
         ctx.clearRect(0, 0, cW, cH);
@@ -422,23 +519,24 @@
         // ctx.fillText('Record: ' + record, 20, 30);
 
         ctx.font = "40px Verdana";
-        ctx.textAlign = "center";
-        ctx.fillText("" + destroyed, cW / 2, cH / 2);
+ctx.textAlign = "left";        // Align text from the left
+ctx.fillStyle = "white";       // Optional: make sure text is visible
+ctx.fillText("" + destroyed, 20, 40);  // x: 20px from left, y: 40px from top
+
       }
+     function drawGameOver() {
+    ctx.fillStyle = "rgba(75, 0, 130, 0.50)"; // Bluish-purple with 50% opacity
+    ctx.fillRect(0, 0, cW, cH);
 
-      function drawGameOver() {
-        ctx.fillStyle = "rgba(128, 0, 128, 0.50)"; // Purple with 75% opacity
-        ctx.fillRect(0, 0, cW, cH);
+    ctx.font = "60px Verdana";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER", cW / 2, cH / 2 - 150);
+    ctx.font = "20px Verdana";
+    ctx.fillText("Total Destroyed: " + destroyed, cW / 2, cH / 2 + 150);
+    //ctx.fillText('RECORD: ' + record, cW / 2, cH / 2 + 140);
+}
 
-        ctx.font = "60px Verdana";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", cW / 2, cH / 2 - 150);
-
-        ctx.font = "20px Verdana";
-        ctx.fillText("Total Destroyed: " + destroyed, cW / 2, cH / 2 + 150);
-        //ctx.fillText('RECORD: ' + record, cW / 2, cH / 2 + 140);
-      }
 
       // ==== Helper to clip circular images ====
       function drawClippedImage(img, sx, sy, sw, sh, dx, dy, dw, dh) {
@@ -500,30 +598,35 @@
       }
 
       // ==== Draw Player ====
-      function drawPlayer() {
-        ctx.save();
-        ctx.translate(cW / 2, cH / 2);
-        ctx.rotate(player.deg);
+     function drawPlayer() {
+  ctx.save();
+  ctx.translate(cW / 2, cH / 2);
+  ctx.rotate(player.deg);
 
-        // Just draw image directly — no clip needed!
-        const cleanSprite = removeWhiteBackground(
-          sprite,
-          200,
-          0,
-          player.width,
-          player.height
-        );
-        ctx.drawImage(
-          cleanSprite,
-          player.posX,
-          player.posY,
-          player.width,
-          player.height
-        );
-        // ctx.drawImage(sprite, 200, 0, player.width, player.height, player.posX, player.posY, player.width, player.height);
-        // ctx.clip();
-        ctx.restore();
-      }
+  // === Pulsing Glow Effect ===
+  const glowPulse = Math.abs(Math.sin(Date.now() / 300)) * 0.4 + 0.6;
+  ctx.shadowColor = `rgba(0, 255, 255, ${glowPulse})`; // cyan glow
+  ctx.shadowBlur = 25;
+
+  // === Draw the Player Sprite ===
+  const cleanSprite = removeWhiteBackground(
+    sprite,
+    200,
+    0,
+    player.width,
+    player.height
+  );
+  ctx.drawImage(
+    cleanSprite,
+    player.posX,
+    player.posY,
+    player.width,
+    player.height
+  );
+
+  ctx.restore();
+}
+
 
       // ==== Draw Bullets ====
       function drawBullets() {
@@ -549,6 +652,7 @@
               bulletW,
               bulletH
             );
+            
 
             ctx.restore();
 
@@ -572,7 +676,6 @@
           }
         });
       }
-
       // ==== New Asteroid ====
       function newAsteroid() {
         const type = Math.floor(Math.random() * 4) + 1;
@@ -704,6 +807,7 @@
 
         drawClippedImage(
           spriteExplosion,
+          
           (ast.stateX += 256),
           spriteY,
           256,
@@ -712,6 +816,7 @@
           drawY,
           drawW,
           drawH
+          
         );
 
         ast.state++;
@@ -728,3 +833,4 @@
     </script>
   </body>
 </html>
+
